@@ -162,10 +162,7 @@ const fallbackCategories = {
   saving:["Ahorro","Fondo de emergencia","Otros"]
 };
 
-function saveAll(){
-  );
-  );
-}
+
 
 function money(n){
   return "$" + Number(n || 0).toLocaleString("es-AR", {maximumFractionDigits:2});
@@ -738,21 +735,9 @@ function loadUserData(){
         const data = doc.data();
 
         transactions = data.transactions || [];
-        budgetData = data.budgetData || {};
-        monthBudget = data.monthBudget || 0;
-        savedTitle = data.title || "Finanzas Yonder";
-
-        renderTitle();
-        renderAll();
-      }
+        budgetData = data.budgetData || {
     });
-};
-        monthBudget = data.monthBudget || 0;
-        savedTitle = data.title || "Finanzas Yonder";
 
-        renderTitle();
-        renderAll();
-      }
     });
 }
 ;
