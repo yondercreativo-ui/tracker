@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -618,13 +617,15 @@ function cancelCategoryEdit(){
   renderAll();
 }
 
+
 function renderBudgets(){
   const box = document.getElementById("budgetList");
   box.innerHTML = "";
 
   const cats = Object.keys(budgetData);
+
   if(cats.length === 0){
-    box.innerHTML = `<div class="empty">Crea tus categorías de presupuesto. Esas mismas serán las categorías de gasto.</div>`;
+    box.innerHTML = `<div class="empty">Crea tus categorías de presupuesto.</div>`;
     return;
   }
 
@@ -632,31 +633,90 @@ function renderBudgets(){
     const item = document.createElement("div");
     item.className = "item";
 
-    if(editingCategory===cat){
-      item.innerHTML = `
-        <div class="row">
-          <input id="editName-${cat}" value="${cat}">
-          <input id="editAmount-${cat}" type="text" inputmode="decimal" value="${budgetData[cat]}">
-        </div>
-        <button onclick="saveCategoryEdit('${cat}')">Guardar</button>
-        <button class="danger" onclick="deleteBudget('${cat}')">Eliminar</button>
-        <button class="ghost" onclick="cancelCategoryEdit()">Cancelar</button>
-      `;
+    if(editingCategory === cat){
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const nameInput = document.createElement("input");
+      nameInput.value = cat;
+
+      const amountInput = document.createElement("input");
+      amountInput.value = budgetData[cat];
+      amountInput.setAttribute("inputmode","decimal");
+
+      row.appendChild(nameInput);
+      row.appendChild(amountInput);
+
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "Guardar";
+      saveBtn.onclick = () => {
+        const newName = nameInput.value.trim();
+        const newAmount = parseAmount(amountInput.value);
+
+        if(!newName || !newAmount) return alert("Valores inválidos");
+
+        delete budgetData[cat];
+        budgetData[newName] = newAmount;
+
+        transactions.forEach(t=>{
+          if(t.category === cat) t.category = newName;
+        });
+
+        editingCategory = null;
+        saveAll();
+        renderAll();
+      };
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "Eliminar";
+      deleteBtn.className = "danger";
+      deleteBtn.onclick = () => deleteBudget(cat);
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "Cancelar";
+      cancelBtn.className = "ghost";
+      cancelBtn.onclick = () => {
+        editingCategory = null;
+        renderAll();
+      };
+
+      item.appendChild(row);
+      item.appendChild(saveBtn);
+      item.appendChild(deleteBtn);
+      item.appendChild(cancelBtn);
+
     } else {
-      item.innerHTML = `
-        <div class="row">
-          <strong>${cat}</strong>
-          <div>
-            <strong>${money(budgetData[cat])}</strong>
-            <button class="edit-btn" onclick="startEditCategory('${cat}')">✏️</button>
-          </div>
-        </div>
-      `;
+
+      const row = document.createElement("div");
+      row.className = "row";
+
+      const left = document.createElement("strong");
+      left.textContent = cat;
+
+      const right = document.createElement("div");
+
+      const amount = document.createElement("strong");
+      amount.textContent = money(budgetData[cat]);
+
+      const editBtn = document.createElement("button");
+      editBtn.className = "edit-btn";
+      editBtn.textContent = "✏️";
+      editBtn.onclick = () => startEditCategory(cat);
+
+      right.appendChild(amount);
+      right.appendChild(editBtn);
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      item.appendChild(row);
     }
 
     box.appendChild(item);
   });
 }
+
 
 /* =========================
    CATEGORY ANALYSIS
