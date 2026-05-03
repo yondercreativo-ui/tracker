@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Finanzas Yonder V10</title>
@@ -75,7 +74,7 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Agregar movimiento</strong>
-    <input id="amountInput" type="number" inputmode="decimal" placeholder="Monto" />
+    <input id="amountInput" type="number" placeholder="Monto" />
     <select id="typeInput" onchange="updateCategorySelect()">
       <option value="expense">Gasto</option>
       <option value="income">Ingreso</option>
@@ -111,14 +110,14 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Presupuesto del mes</strong>
-    <input id="monthBudgetInput" type="number" inputmode="decimal" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
+    <input id="monthBudgetInput" type="number" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
     <div id="budgetRemaining" class="small"></div>
   </div>
 
   <div class="card">
     <strong>Crear / actualizar categoría</strong>
     <input id="budgetCategoryInput" placeholder="Categoría (ej: Comida)" />
-    <input id="budgetLimitInput" type="number" inputmode="decimal" placeholder="Presupuesto máximo" />
+    <input id="budgetLimitInput" type="number" placeholder="Presupuesto máximo" />
     <button onclick="addBudget()">Guardar</button>
   </div>
   <div class="card">
@@ -151,8 +150,8 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 </div>
 
 <script>
-let transactions = JSON.parse(localStorage.getItem("fy_transactions")) || JSON.parse(localStorage.getItem("transactions")) || [];
-let budgetData = JSON.parse(localStorage.getItem("fy_budgets")) || JSON.parse(localStorage.getItem("budgets")) || {};
+let transactions = [] || [] || [];
+let budgetData = [] || [] || {};
 
 const fallbackCategories = {
   income:["Sueldo","Cliente","Freelance","Regalo","Otros"],
@@ -161,8 +160,8 @@ const fallbackCategories = {
 };
 
 function saveAll(){
-  localStorage.setItem("fy_transactions", JSON.stringify(transactions));
-  localStorage.setItem("fy_budgets", JSON.stringify(budgetData));
+  );
+  );
 }
 
 function money(n){
@@ -363,12 +362,12 @@ if(editingMove===t.id){
 
 
 // ===== Presupuesto mensual =====
-let monthBudget = Number(localStorage.getItem("fy_month_budget") || 0);
+let monthBudget = Number(null || 0);
 
 function saveMonthBudget(){
   const val = Number(document.getElementById("monthBudgetInput").value || 0);
   monthBudget = val;
-  localStorage.setItem("fy_month_budget", String(monthBudget));
+  );
   renderBudgetRemaining();
 }
 
@@ -455,7 +454,7 @@ function renderBudgets(){
       item.innerHTML = `
       <div class="row">
         <input id="editName-${cat}" value="${cat}">
-        <input id="editAmount-${cat}" type="number" inputmode="decimal" value="${budgetData[cat]}">
+        <input id="editAmount-${cat}" type="number" value="${budgetData[cat]}">
       </div>
       <button onclick="saveCategoryEdit('${cat}')">Guardar</button>
       <button class="ghost" onclick="cancelCategoryEdit()">Cancelar</button>
@@ -580,7 +579,7 @@ renderAll();
 
 
 // ===== Editable Title =====
-let savedTitle = localStorage.getItem("fy_title") || "Finanzas Yonder";
+let savedTitle = null || "Finanzas Yonder";
 
 function renderTitle(){
   const title = document.getElementById("appTitle");
@@ -605,7 +604,7 @@ function saveTitle(){
   const title = document.getElementById("appTitle");
 
   savedTitle = input.value || "Finanzas Yonder";
-  localStorage.setItem("fy_title", savedTitle);
+  
 
   input.style.display = "none";
   title.style.display = "block";
@@ -711,8 +710,8 @@ const db = firebase.firestore();
 let currentUser = null;
 
 async function saveAll(){
-  localStorage.setItem("fy_transactions", JSON.stringify(transactions));
-  localStorage.setItem("fy_budgets", JSON.stringify(budgetData));
+  );
+  );
 
   if(!currentUser) return;
 
@@ -769,18 +768,6 @@ auth.onAuthStateChanged(async user => {
     if(overlay) overlay.style.display = "flex";
   }
 });
-</script>
-
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js')
-    .then(reg => {
-      console.log('SW registrado');
-      reg.update();
-    })
-    .catch(err => console.log('SW error', err));
-}
 </script>
 
 </body>
