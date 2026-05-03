@@ -606,12 +606,14 @@ function deleteBudget(cat){
 
   transactions = transactions.filter(t => t.category !== cat);
 
+  editingCategory = null;
   saveAll();
   renderTitle();
   renderAll();
 }
 
 function cancelCategoryEdit(){
+
   editingCategory = null;
   renderTitle();
   renderAll();
@@ -638,6 +640,7 @@ function renderBudgets(){
           <input id="editAmount-${cat}" type="text" inputmode="decimal" value="${budgetData[cat]}">
         </div>
         <button onclick="saveCategoryEdit('${cat}')">Guardar</button>
+        <button class="danger" onclick="deleteBudget('${cat}')">Eliminar</button>
         <button class="ghost" onclick="cancelCategoryEdit()">Cancelar</button>
       `;
     } else {
@@ -647,7 +650,6 @@ function renderBudgets(){
           <div>
             <strong>${money(budgetData[cat])}</strong>
             <button class="edit-btn" onclick="startEditCategory('${cat}')">✏️</button>
-            <button class="edit-btn" onclick="deleteBudget('${cat}')">🗑️</button>
           </div>
         </div>
       `;
