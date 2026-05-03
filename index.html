@@ -249,8 +249,8 @@ const db = firebase.firestore();
 
 let currentUser = null;
 
-async function loginWithGoogle(){
-  await auth.signInWithPopup(provider);
+function loginWithGoogle(){
+  auth.signInWithRedirect(provider);
 }
 
 async function logout(){
@@ -285,6 +285,15 @@ async function loadUserData(user){
   renderTitle();
   renderAll();
 }
+
+
+auth.getRedirectResult().then((result) => {
+  if (result.user) {
+    console.log("Login exitoso:", result.user);
+  }
+}).catch((error) => {
+  console.error("Error login:", error);
+});
 
 auth.onAuthStateChanged(async (user)=>{
   if(user){
