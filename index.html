@@ -695,10 +695,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 auth.onAuthStateChanged(user => {
   const overlay = document.getElementById("authPage");
+
   if(user){
-    if(overlay) overlay.style.display = "none";
+    currentUser = user;
+
+    if(overlay){
+      overlay.style.display = "none";
+      overlay.style.pointerEvents = "none";
+    }
+
+    loadUserData();
   } else {
-    if(overlay) overlay.style.display = "flex";
+    currentUser = null;
+
+    if(overlay){
+      overlay.style.display = "flex";
+      overlay.style.pointerEvents = "auto";
+    }
   }
 });
 </script>
@@ -742,18 +755,10 @@ function loadUserData(){
         renderAll();
       }
     });
-});
 }
-;
-    monthBudget = data.monthBudget || 0;
-    savedTitle = data.title || "Finanzas Yonder";
-  } else {
-    await saveAll();
-  }
+    });
+}
 
-  renderTitle();
-  renderAll();
-}
 
 auth.onAuthStateChanged(async user => {
   const overlay = document.getElementById("authPage");
