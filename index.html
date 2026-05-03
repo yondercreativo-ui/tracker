@@ -601,6 +601,17 @@ function cancelCategoryEdit(){
   renderAll();
 }
 
+function deleteBudget(cat){
+  const ok = confirm(`¿Eliminar "${cat}"?`);
+  if(!ok) return;
+
+  delete budgetData[cat];
+  transactions = transactions.filter(t => t.category !== cat);
+
+  saveAll();
+  renderAll();
+}
+
 function renderBudgets(){
   const box = document.getElementById("budgetList");
   box.innerHTML = "";
@@ -610,24 +621,6 @@ function renderBudgets(){
     box.innerHTML = `<div class="empty">Crea tus categorías de presupuesto. Esas mismas serán las categorías de gasto.</div>`;
     return;
   }
-
-
-function deleteBudget(cat){
-  const ok = confirm("¿Eliminar este presupuesto?");
-  if(!ok) return;
-
-  delete budgetData[cat];
-
-  transactions.forEach(t=>{
-    if(t.category === cat){
-      t.category = "";
-    }
-  });
-
-  saveAll();
-  renderAll();
-}
-
 
   cats.forEach(cat=>{
     const item = document.createElement("div");
@@ -649,8 +642,6 @@ function deleteBudget(cat){
           <div>
             <strong>${money(budgetData[cat])}</strong>
             <button class="edit-btn" onclick="startEditCategory('${cat}')">✏️</button>
-      <button class="edit-btn" onclick="deleteBudget('${cat}')">🗑️</button>
-            <button class="edit-btn" onclick="deleteBudget(\'${cat}\')">🗑️</button>
           </div>
         </div>
       `;
