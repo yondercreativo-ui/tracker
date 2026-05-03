@@ -1,3 +1,5 @@
+Código más reciente funcionando
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -595,20 +597,23 @@ function saveCategoryEdit(oldCat){
   renderAll();
 }
 
-function cancelCategoryEdit(){
-  editingCategory = null;
+
+function deleteBudget(cat){
+  const ok = confirm("¿Eliminar este presupuesto?");
+  if(!ok) return;
+
+  delete budgetData[cat];
+
+  transactions = transactions.filter(t => t.category !== cat);
+
+  saveAll();
   renderTitle();
   renderAll();
 }
 
-function deleteBudget(cat){
-  const ok = confirm(`¿Eliminar "${cat}"?`);
-  if(!ok) return;
-
-  delete budgetData[cat];
-  transactions = transactions.filter(t => t.category !== cat);
-
-  saveAll();
+function cancelCategoryEdit(){
+  editingCategory = null;
+  renderTitle();
   renderAll();
 }
 
@@ -642,6 +647,7 @@ function renderBudgets(){
           <div>
             <strong>${money(budgetData[cat])}</strong>
             <button class="edit-btn" onclick="startEditCategory('${cat}')">✏️</button>
+            <button class="edit-btn" onclick="deleteBudget('${cat}')">🗑️</button>
           </div>
         </div>
       `;
