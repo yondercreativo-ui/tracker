@@ -29,24 +29,45 @@ body{
   width:300px;
 }
 
-button{
-  padding:14px;
-  border:none;
-  border-radius:10px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
 /* APP */
 #appShell{
   display:none;
   padding:20px;
 }
 
+/* HEADER */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  margin-bottom:20px;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+/* BLOQUES */
+.box{
+  background:#121826;
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:16px;
+}
+
+input, select{
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:none;
+  background:#1b2236;
+  color:white;
 }
 </style>
 </head>
@@ -64,16 +85,37 @@ button{
 
 <!-- APP -->
 <div id="appShell">
+
+  <!-- HEADER -->
   <div class="topbar">
-    <h2>Bienvenido</h2>
+    <h2 id="titleEditable" contenteditable="true">Finanzas Yonder</h2>
     <span id="userEmail"></span>
     <button id="logoutBtn">Salir</button>
   </div>
 
-  <h3>Tu app está funcionando 🚀</h3>
+  <!-- AGREGAR MOVIMIENTO -->
+  <div class="box">
+    <h3>Nuevo movimiento</h3>
+    <input id="amount" placeholder="Monto">
+    <select id="type">
+      <option>Gasto</option>
+      <option>Ingreso</option>
+      <option>Ahorro</option>
+      <option>Inversión</option>
+    </select>
+    <input id="desc" placeholder="Descripción">
+    <button onclick="addMovement()">Guardar</button>
+  </div>
+
+  <!-- LISTA -->
+  <div class="box">
+    <h3>Movimientos</h3>
+    <div id="list"></div>
+  </div>
+
 </div>
 
-<!-- 🔥 FIREBASE (VERSIÓN COMPAT = FIX DEL BUG) -->
+<!-- 🔥 FIREBASE COMPAT -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
@@ -92,13 +134,15 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const provider = new firebase.auth.GoogleAuthProvider();
 
+let movements = [];
+
 /* LOGIN */
 document.getElementById("loginBtn").onclick = async ()=>{
   try{
     await auth.signInWithPopup(provider);
   }catch(e){
     console.error(e);
-    alert("Error iniciando sesión");
+    alert("Error login");
   }
 };
 
@@ -107,10 +151,8 @@ document.getElementById("logoutBtn").onclick = async ()=>{
   await auth.signOut();
 };
 
-/* 🔥 CONTROL DE SESIÓN (ESTO YA FUNCIONA) */
+/* SESIÓN */
 auth.onAuthStateChanged(user=>{
-  console.log("USER:", user);
-
   if(user){
     document.getElementById("authPage").style.display = "none";
     document.getElementById("appShell").style.display = "block";
@@ -120,6 +162,45 @@ auth.onAuthStateChanged(user=>{
     document.getElementById("appShell").style.display = "none";
   }
 });
+
+/* APP FUNCIONAL */
+function addMovement(){
+  const amount = document.getElementById("amount").value;
+  const type = document.getElementById("type").value;
+  const desc = document.getElementById("desc").value;
+
+  if(!amount || !desc) return;
+
+  movements.unshift({
+    amount,
+    type,
+    desc,
+    date: new Date().toLocaleString()
+  });
+
+  render();
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  movements.slice(0,5).forEach((m,i)=>{
+    list.innerHTML += `
+      <div style="padding:10px 0;border-bottom:1px solid #222;">
+        <b contenteditable="true">${m.desc}</b><br>
+        <small>${m.type} • ${m.date}</small>
+        <span style="float:right">$${m.amount}</span>
+        <button onclick="deleteMovement(${i})">❌</button>
+      </div>
+    `;
+  });
+}
+
+function deleteMovement(i){
+  movements.splice(i,1);
+  render();
+}
 </script>
 
 </body>
