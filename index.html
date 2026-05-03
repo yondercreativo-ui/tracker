@@ -669,6 +669,7 @@ function handleSwipe(){
 
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
 
 <script>
 const firebaseConfig = {
@@ -698,6 +699,63 @@ auth.onAuthStateChanged(user => {
   if(user){
     if(overlay) overlay.style.display = "none";
   } else {
+    if(overlay) overlay.style.display = "flex";
+  }
+});
+</script>
+
+
+<script>
+const db = firebase.firestore();
+let currentUser = null;
+
+async function saveAll(){
+  localStorage.setItem("fy_transactions", JSON.stringify(transactions));
+  localStorage.setItem("fy_budgets", JSON.stringify(budgetData));
+
+  if(!currentUser) return;
+
+  await db.collection("users")
+    .doc(currentUser.uid)
+    .set({
+      transactions,
+      budgetData,
+      monthBudget,
+      title: savedTitle
+    });
+}
+
+async function loadUserData(){
+  if(!currentUser) return;
+
+  const doc = await db.collection("users")
+    .doc(currentUser.uid)
+    .get();
+
+  if(doc.exists){
+    const data = doc.data();
+
+    transactions = data.transactions || [];
+    budgetData = data.budgetData || {};
+    monthBudget = data.monthBudget || 0;
+    savedTitle = data.title || "Finanzas Yonder";
+  } else {
+    await saveAll();
+  }
+
+  renderTitle();
+  renderAll();
+}
+
+auth.onAuthStateChanged(async user => {
+  const overlay = document.getElementById("authPage");
+
+  if(user){
+    currentUser = user;
+    if(overlay) overlay.style.display = "none";
+    await loadUserData();
+  } else {
+    currentUser = null;
     if(overlay) overlay.style.display = "flex";
   }
 });
