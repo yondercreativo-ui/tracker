@@ -74,7 +74,7 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Agregar movimiento</strong>
-    <input id="amountInput" type="text" inputmode="decimal" placeholder="Monto (ej: 2,50)" />
+    <input id="amountInput" type="number" placeholder="Monto" />
     <select id="typeInput" onchange="updateCategorySelect()">
       <option value="expense">Gasto</option>
       <option value="income">Ingreso</option>
@@ -110,14 +110,14 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Presupuesto del mes</strong>
-    <input id="monthBudgetInput" type="text" inputmode="decimal" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
+    <input id="monthBudgetInput" type="number" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
     <div id="budgetRemaining" class="small"></div>
   </div>
 
   <div class="card">
     <strong>Crear / actualizar categoría</strong>
     <input id="budgetCategoryInput" placeholder="Categoría (ej: Comida)" />
-    <input id="budgetLimitInput" type="text" inputmode="decimal" placeholder="Presupuesto máximo" />
+    <input id="budgetLimitInput" type="number" placeholder="Presupuesto máximo" />
     <button onclick="addBudget()">Guardar</button>
   </div>
   <div class="card">
@@ -150,11 +150,8 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 </div>
 
 <script>
-let transactions = [] || [] || [];
-function parseAmount(value){
-  return parseFloat((value || "").replace(",", ".")) || 0;
-}
-let budgetData = [] || [] || {};
+let transactions = [];
+let budgetData = {};
 
 const fallbackCategories = {
   income:["Sueldo","Cliente","Freelance","Regalo","Otros"],
@@ -162,7 +159,9 @@ const fallbackCategories = {
   saving:["Ahorro","Fondo de emergencia","Otros"]
 };
 
-
+function saveAll(){
+  
+}
 
 function money(n){
   return "$" + Number(n || 0).toLocaleString("es-AR", {maximumFractionDigits:2});
@@ -221,8 +220,7 @@ renderAll();
 }
 
 function addTransaction(){
-  const raw = document.getElementById("amountInput").value;
-  const amount = parseAmount(raw);
+  const amount = Number(document.getElementById("amountInput").value);
   const type = document.getElementById("typeInput").value;
   const category = document.getElementById("categoryInput").value;
   const concept = document.getElementById("conceptInput").value.trim();
@@ -711,6 +709,8 @@ const db = firebase.firestore();
 let currentUser = null;
 
 async function saveAll(){
+  
+
   if(!currentUser) return;
 
   await db.collection("users")
@@ -721,7 +721,6 @@ async function saveAll(){
       monthBudget,
       title: savedTitle
     });
-});
 }
 
 
@@ -735,10 +734,15 @@ function loadUserData(){
         const data = doc.data();
 
         transactions = data.transactions || [];
-        budgetData = data.budgetData || {
-    });
+        budgetData = data.budgetData || {};
+        monthBudget = data.monthBudget || 0;
+        savedTitle = data.title || "Finanzas Yonder";
 
+        renderTitle();
+        renderAll();
+      }
     });
+});
 }
 ;
     monthBudget = data.monthBudget || 0;
