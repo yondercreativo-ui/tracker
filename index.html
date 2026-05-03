@@ -1,11 +1,9 @@
-Código 333
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Finanzas Yonder V10</title>
+<title>Orden es riqueza</title>
 <style>
 :root{
   --bg:#0f1115; --card:#1a1d24; --field:#2a2f38; --line:#343946;
@@ -281,25 +279,29 @@ function money(n){
 async function saveAll(){
   if(!currentUser || isRemoteRendering) return;
 
+  // IMPORTANTE: sin merge.
+  // Firestore con merge:true no elimina propiedades borradas dentro de budgetData.
+  // Al sobrescribir el documento completo, las categorías eliminadas no reaparecen.
   await db.collection("users").doc(currentUser.uid).set({
     transactions,
     budgetData,
     monthBudget,
     title: savedTitle,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge:true });
+  });
 }
 
 async function forceSaveAll(){
   if(!currentUser) return;
 
+  // Guardado forzado sin merge para operaciones críticas como eliminar categorías.
   await db.collection("users").doc(currentUser.uid).set({
     transactions,
     budgetData,
     monthBudget,
     title: savedTitle,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, { merge:true });
+  });
 }
 
 function loadUserData(){
