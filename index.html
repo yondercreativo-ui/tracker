@@ -13,7 +13,6 @@ body{
   color:white;
 }
 
-/* LOGIN */
 .auth-page{
   min-height:100vh;
   display:flex;
@@ -38,7 +37,6 @@ button{
   cursor:pointer;
 }
 
-/* APP */
 .container{
   padding:20px;
 }
@@ -71,7 +69,7 @@ button{
 
 <script>
 
-// 🔥 CONFIG FIREBASE (YA TIENES ESTO)
+// 🔥 CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBGDX1o8OQWT0ZsXjE9wUoIdT4_IJWPy7U",
   authDomain: "app-de-finanzas-c32c3.firebaseapp.com",
@@ -90,27 +88,23 @@ const db = firebase.firestore();
 let currentUser = null;
 
 
-// 🔥 LOGIN (FIX)
+// 🔥 LOGIN (REDIRECT)
 function loginWithGoogle(){
   auth.signInWithRedirect(provider);
 }
 
 
-// 🔥 RETORNO LOGIN (CLAVE)
-auth.getRedirectResult()
-  .then((result) => {
-    if (result.user) {
-      console.log("Login OK");
-    }
-  })
-  .catch((error) => {
-    console.error("Error login:", error);
-  });
+// 🔥 LOGOUT
+function logout(){
+  auth.signOut();
+}
 
 
-// 🔥 DETECTAR USUARIO
+// 🔥 CONTROL TOTAL DE SESIÓN (SIN LOOP)
 auth.onAuthStateChanged(async (user)=>{
   if(user){
+    console.log("Usuario activo:", user.email);
+
     currentUser = user;
 
     document.getElementById("authPage").style.display = "none";
@@ -120,18 +114,14 @@ auth.onAuthStateChanged(async (user)=>{
     await loadUserData();
 
   } else {
+    console.log("No hay usuario");
+
     currentUser = null;
 
     document.getElementById("authPage").style.display = "flex";
     document.getElementById("appShell").style.display = "none";
   }
 });
-
-
-// 🔥 LOGOUT
-function logout(){
-  auth.signOut();
-}
 
 
 // 🔥 FIRESTORE BASE
