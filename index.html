@@ -611,6 +611,24 @@ function renderBudgets(){
     return;
   }
 
+
+function deleteBudget(cat){
+  const ok = confirm("¿Eliminar este presupuesto?");
+  if(!ok) return;
+
+  delete budgetData[cat];
+
+  transactions.forEach(t=>{
+    if(t.category === cat){
+      t.category = "";
+    }
+  });
+
+  saveAll();
+  renderAll();
+}
+
+
   cats.forEach(cat=>{
     const item = document.createElement("div");
     item.className = "item";
@@ -631,6 +649,8 @@ function renderBudgets(){
           <div>
             <strong>${money(budgetData[cat])}</strong>
             <button class="edit-btn" onclick="startEditCategory('${cat}')">✏️</button>
+      <button class="edit-btn" onclick="deleteBudget('${cat}')">🗑️</button>
+            <button class="edit-btn" onclick="deleteBudget(\'${cat}\')">🗑️</button>
           </div>
         </div>
       `;
