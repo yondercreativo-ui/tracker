@@ -1,11 +1,9 @@
-Código más reciente funcionando
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Finanzas Yonder V10</title>
+<title>Judas</title>
 <style>
 :root{
   --bg:#0f1115; --card:#1a1d24; --field:#2a2f38; --line:#343946;
@@ -51,6 +49,56 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
 
 .editable{cursor:pointer}
+
+
+/* =========================
+   PREMIUM CONFIRM MODAL
+========================= */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.62);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:10000;
+  padding:20px;
+}
+.modal-overlay.active{display:flex}
+.modal-card{
+  width:100%;
+  max-width:360px;
+  background:linear-gradient(180deg,#20242d,#171a21);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:24px;
+  padding:20px;
+  box-shadow:0 22px 60px rgba(0,0,0,.45);
+  animation:modalIn .16s ease-out;
+}
+.modal-icon{
+  width:44px;
+  height:44px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,77,79,.14);
+  color:var(--red);
+  font-size:22px;
+  margin-bottom:12px;
+}
+.modal-title{font-size:20px;font-weight:900;margin-bottom:6px}
+.modal-text{font-size:14px;color:var(--muted);line-height:1.45;margin-bottom:16px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal-actions button{margin-top:0}
+.modal-cancel{background:transparent;color:#fff;border:1px solid var(--line)}
+.modal-delete{background:var(--red);color:#fff}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(10px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
 
 </style>
 </head>
@@ -154,6 +202,20 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
   </div>
 </div>
 
+
+<!-- PREMIUM CONFIRM MODAL -->
+<div id="confirmModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="modal-icon">⚠️</div>
+    <div id="confirmTitle" class="modal-title">Eliminar categoría</div>
+    <div id="confirmText" class="modal-text">Esta acción eliminará la categoría seleccionada.</div>
+    <div class="modal-actions">
+      <button id="confirmCancel" class="modal-cancel">Cancelar</button>
+      <button id="confirmAccept" class="modal-delete">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <div class="nav">
   <button id="navHome" class="active" onclick="showPage('homePage','navHome')">Inicio</button>
   <button id="navCategories" onclick="showPage('categoriesPage','navCategories')">Categorías</button>
@@ -216,6 +278,18 @@ function money(n){
 
 async function saveAll(){
   if(!currentUser || isRemoteRendering) return;
+
+  await db.collection("users").doc(currentUser.uid).set({
+    transactions,
+    budgetData,
+    monthBudget,
+    title: savedTitle,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }, { merge:true });
+}
+
+async function forceSaveAll(){
+  if(!currentUser) return;
 
   await db.collection("users").doc(currentUser.uid).set({
     transactions,
@@ -567,6 +641,51 @@ function renderBudgetRemaining(){
   }
 }
 
+
+/* =========================
+   PREMIUM CONFIRM
+========================= */
+function premiumConfirm({title="Confirmar acción", text="¿Estás seguro?", acceptText="Eliminar"} = {}){
+  return new Promise(resolve => {
+    const modal = document.getElementById("confirmModal");
+    const titleEl = document.getElementById("confirmTitle");
+    const textEl = document.getElementById("confirmText");
+    const cancelBtn = document.getElementById("confirmCancel");
+    const acceptBtn = document.getElementById("confirmAccept");
+
+    if(!modal || !titleEl || !textEl || !cancelBtn || !acceptBtn){
+      resolve(confirm(text));
+      return;
+    }
+
+    titleEl.textContent = title;
+    textEl.textContent = text;
+    acceptBtn.textContent = acceptText;
+
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden","false");
+
+    const cleanup = (result) => {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden","true");
+      cancelBtn.onclick = null;
+      acceptBtn.onclick = null;
+      modal.onclick = null;
+      document.onkeydown = null;
+      resolve(result);
+    };
+
+    cancelBtn.onclick = () => cleanup(false);
+    acceptBtn.onclick = () => cleanup(true);
+    modal.onclick = (e) => {
+      if(e.target === modal) cleanup(false);
+    };
+    document.onkeydown = (e) => {
+      if(e.key === "Escape") cleanup(false);
+    };
+  });
+}
+
 /* =========================
    BUDGET LIST
 ========================= */
@@ -598,18 +717,44 @@ function saveCategoryEdit(oldCat){
 }
 
 
-function deleteBudget(cat){
-  const ok = confirm("¿Eliminar este presupuesto?");
+async function deleteBudget(cat){
+  const ok = await premiumConfirm({
+    title: "Eliminar categoría",
+    text: `¿Eliminar “${cat}”? La categoría se borrará de Presupuestos y los movimientos existentes pasarán a “Sin categoría”.`,
+    acceptText: "Eliminar"
+  });
   if(!ok) return;
 
-  delete budgetData[cat];
+  const cleanCat = String(cat || "");
 
-  transactions = transactions.filter(t => t.category !== cat);
+  // Reconstruimos el objeto en vez de mutarlo directamente.
+  // Esto evita que Firebase o el render reutilicen una referencia vieja de budgetData.
+  const nextBudgetData = {};
+  Object.keys(budgetData).forEach(key => {
+    if(key !== cleanCat){
+      nextBudgetData[key] = budgetData[key];
+    }
+  });
+  budgetData = nextBudgetData;
+
+  // No eliminamos el historial: solo movemos esos movimientos fuera de la categoría borrada.
+  transactions = transactions.map(t => {
+    if(t.category === cleanCat){
+      return {...t, category:"Sin categoría"};
+    }
+    return t;
+  });
 
   editingCategory = null;
-  saveAll();
-  renderTitle();
-  renderAll();
+
+  try{
+    await forceSaveAll();
+    renderTitle();
+    renderAll();
+  }catch(error){
+    console.error("Error eliminando categoría:", error);
+    alert("No se pudo eliminar la categoría. Revisa tu conexión e intenta de nuevo.");
+  }
 }
 
 function cancelCategoryEdit(){
