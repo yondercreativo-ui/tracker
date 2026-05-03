@@ -74,7 +74,7 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Agregar movimiento</strong>
-    <input id="amountInput" type="number" placeholder="Monto" />
+    <input id="amountInput" type="number" inputmode="decimal" placeholder="Monto" />
     <select id="typeInput" onchange="updateCategorySelect()">
       <option value="expense">Gasto</option>
       <option value="income">Ingreso</option>
@@ -110,14 +110,14 @@ button{width:100%;padding:14px;margin-top:10px;border-radius:13px;border:none;ba
 
   <div class="card">
     <strong>Presupuesto del mes</strong>
-    <input id="monthBudgetInput" type="number" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
+    <input id="monthBudgetInput" type="number" inputmode="decimal" placeholder="Monto total del mes" onchange="saveMonthBudget()" />
     <div id="budgetRemaining" class="small"></div>
   </div>
 
   <div class="card">
     <strong>Crear / actualizar categoría</strong>
     <input id="budgetCategoryInput" placeholder="Categoría (ej: Comida)" />
-    <input id="budgetLimitInput" type="number" placeholder="Presupuesto máximo" />
+    <input id="budgetLimitInput" type="number" inputmode="decimal" placeholder="Presupuesto máximo" />
     <button onclick="addBudget()">Guardar</button>
   </div>
   <div class="card">
@@ -454,7 +454,7 @@ function renderBudgets(){
       item.innerHTML = `
       <div class="row">
         <input id="editName-${cat}" value="${cat}">
-        <input id="editAmount-${cat}" type="number" value="${budgetData[cat]}">
+        <input id="editAmount-${cat}" type="number" inputmode="decimal" value="${budgetData[cat]}">
       </div>
       <button onclick="saveCategoryEdit('${cat}')">Guardar</button>
       <button class="ghost" onclick="cancelCategoryEdit()">Cancelar</button>
