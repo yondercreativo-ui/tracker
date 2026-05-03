@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Finanzas Yonder V10</title>
@@ -768,6 +769,18 @@ auth.onAuthStateChanged(async user => {
     if(overlay) overlay.style.display = "flex";
   }
 });
+</script>
+
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(reg => {
+      console.log('SW registrado');
+      reg.update();
+    })
+    .catch(err => console.log('SW error', err));
+}
 </script>
 
 </body>
