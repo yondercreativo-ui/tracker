@@ -725,18 +725,27 @@ async function saveAll(){
     });
 }
 
-async function loadUserData(){
+
+function loadUserData(){
   if(!currentUser) return;
 
-  const doc = await db.collection("users")
+  db.collection("users")
     .doc(currentUser.uid)
-    .get();
+    .onSnapshot(doc => {
+      if(doc.exists){
+        const data = doc.data();
 
-  if(doc.exists){
-    const data = doc.data();
+        transactions = data.transactions || [];
+        budgetData = data.budgetData || {};
+        monthBudget = data.monthBudget || 0;
+        savedTitle = data.title || "Finanzas Yonder";
 
-    transactions = data.transactions || [];
-    budgetData = data.budgetData || {};
+        renderTitle();
+        renderAll();
+      }
+    });
+}
+;
     monthBudget = data.monthBudget || 0;
     savedTitle = data.title || "Finanzas Yonder";
   } else {
